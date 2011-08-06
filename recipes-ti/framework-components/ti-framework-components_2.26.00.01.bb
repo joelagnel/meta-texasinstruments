@@ -1,5 +1,7 @@
 require ti-framework-components.inc
 
+LIC_FILES_CHKSUM = "file://framework_components_2_26_00_01_manifest.html;md5=3250f9da7ee72284c07f8dd840400c75"
+
 PV = "2_26_00_01"
 
 SRC_URI[fctarball.md5sum] = "40b51cade2f9ae6e6f6dca73c17065af"

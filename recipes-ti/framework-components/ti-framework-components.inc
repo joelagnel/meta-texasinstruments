@@ -3,8 +3,6 @@ HOMEPAGE = "http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/f
 SECTION = "devel"
 LICENSE = "BSD"
 
-LIC_FILES_CHKSUM = "file://framework_components_2_25_03_07_manifest.html;md5=0dce4966b8db457678eaf80b058b35d3"
-
 require ../includes/ti-paths.inc
 require ../includes/ti-staging.inc
 
