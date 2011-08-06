@@ -3,8 +3,6 @@ HOMEPAGE = "http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/c
 SECTION = "devel"
 LICENSE = "BSD"
 
-LIC_FILES_CHKSUM = "file://codec_engine_2_26_01_09_manifest.html;md5=71cc7e8579d4b73cc88eefe5c40a9efa"
-
 # TODO :: Add Codec Engine Library Rebuild
 # TODO :: Add Examples APP_LOCAL build as well?
 # TODO :: Check DEPENDS - are the DSP side packages required for ARM-only products?
