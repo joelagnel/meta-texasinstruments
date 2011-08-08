@@ -7,6 +7,7 @@ SRC_URI[c6accelbin.sha256sum] = "453399a84bf117bd7a91393242c7c005e2829692db5ede1
 
 SRC_URI_append = "file://fix-loadmodule.patch \
                   file://0001-soc-honour-buildsystem-CFLAGS-and-LDFLAGS-when-set.patch \
+                  file://0002-ti-c6accel-Set-GCCTARG-to-toolchain-executable-prefi.patch \
                  "
 
 PV = "1_01_00_03"
@@ -18,4 +19,5 @@ do_patch_prepend () {
 	import os
 	os.system("perl -pi -e 's/\\r\\n/\\n/g' ${S}/soc/app/Makefile")
 	os.system("perl -pi -e 's/\\r\\n/\\n/g' ${S}/soc/c6accelw/Makefile")
+	os.system("perl -pi -e 's/\\r\\n/\\n/g' ${S}/config.bld")
 }

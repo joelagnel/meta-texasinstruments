@@ -1,0 +1,32 @@
+From ea68c74d9367978ea3ec852158f0e6251604ef2a Mon Sep 17 00:00:00 2001
+From: Joel A Fernandes <agnel.joel@gmail.com>
+Date: Mon, 8 Aug 2011 01:24:57 -0500
+Subject: [PATCH] ti-c6accel: Set GCCTARG to toolchain executable prefix
+
+This is required to fix linker script template generation errors
+
+Signed-off-by: Joel A Fernandes <agnel.joel@gmail.com>
+---
+ config.bld |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/config.bld b/config.bld
+index 17e41cb..7604c3a 100755
+--- a/config.bld
++++ b/config.bld
+@@ -71,8 +71,12 @@ if (find[0]!=crosscompile && find.length==2) {
+     longName = crosscompile + "gcc";
+ }
+ 
++/* XDC Template Generation looks for ld in GCArmv5T.rootDir + GCArmv5T.GCCTARG */
++gccTarg = "bin/" + find[1]
++
+ /* location of the GCC Arm9 tools */
+ var GCArmv5T = xdc.useModule('gnu.targets.arm.GCArmv5T');
++GCArmv5T.GCCTARG = gccTarg;
+ GCArmv5T.LONGNAME = longName;
+ GCArmv5T.platform = java.lang.System.getenv("PLATFORM_XDC");
+ GCArmv5T.rootDir = tooldir;
+-- 
+1.7.0.4
+
