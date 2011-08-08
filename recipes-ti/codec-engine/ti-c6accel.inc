@@ -56,7 +56,7 @@ TIARGS = ' \
 do_configure() {
 	unset VERBOSE
 	make ${TIARGS} clean
-	sed -i -e 's:-L$(LINUXLIBS_INSTALL_DIR)/lib:-L$(LINUXLIBS_INSTALL_DIR)/lib -L$(LINUXLIBS_INSTALL_DIR)/usr/lib ${LDFLAGS}:' ${S}/soc/app/Makefile
+        sed -i -e 's:-L$(LINUXLIBS_INSTALL_DIR)/lib:-L$(LINUXLIBS_INSTALL_DIR)/lib -L$(LINUXLIBS_INSTALL_DIR)/usr/lib:' ${S}/soc/app/Makefile
 
 	# Angstrom 2008 breaks with -Wl,-T, while angstrom 2010 needs it
 	if [ $(${TARGET_PREFIX}gcc -dumpversion | awk -F. '{print $2}') -gt 3 ] ; then
