@@ -36,7 +36,7 @@ index 2647746..bed937e 100755
  endif
  
 -LD_FLAGS += -L$(LINUXLIBS_INSTALL_DIR)/lib -lm -lpthread
-+LD_FLAGS += $(LDFLAGS) -L$(LINUXLIBS_INSTALL_DIR)/lib -lm -lpthread
++LD_FLAGS += -L$(LINUXLIBS_INSTALL_DIR)/lib -lm -lpthread $(LDFLAGS)
  C6ACCEL_LIB += ../c6accelw/lib/c6accelw_$(PLATFORM).a470MV
  
  COMPILE.c = $(VERBOSE) $(CSTOOL_PREFIX)gcc $(CPP_FLAGS) $(C_FLAGS) $(CPP_FLAGS) -c
