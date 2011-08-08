@@ -1,0 +1,25 @@
+From dae5cf2bec3e80feb5d80ccf5c90abf4598a4692 Mon Sep 17 00:00:00 2001
+From: Joel A Fernandes <agnel.joel@gmail.com>
+Date: Mon, 8 Aug 2011 00:51:27 -0500
+Subject: [PATCH] Fix xdctools LD path discovery
+
+---
+ packages/gnu/targets/ITarget.xs |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/packages/gnu/targets/ITarget.xs b/packages/gnu/targets/ITarget.xs
+index 764d60d..d293fba 100644
+--- a/packages/gnu/targets/ITarget.xs
++++ b/packages/gnu/targets/ITarget.xs
+@@ -251,7 +251,7 @@ function _initVers(target)
+ 
+     function askLd(target)
+     {
+-        var ldCmd = target.rootDir + "/" + target.GCCTARG + "-ld";
++        var ldCmd = target.rootDir + "/" + target.GCCTARG + "ld";
+         /* If the ld executable cannot be found, and the prefix is not used,
+          * it's probably a misspelled directory path.
+          */
+-- 
+1.7.0.4
+

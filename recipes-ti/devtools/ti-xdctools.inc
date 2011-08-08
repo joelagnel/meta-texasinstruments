@@ -5,7 +5,7 @@ LICENSE = "BSD, GPLv2"
 
 LIC_FILES_CHKSUM = "file://docs/license/xdc/shelf/package.html;md5=eace8fa313a140ef178ecfa0f53cc655"
 
-PR = "r2"
+PR = "r3"
 
 require ../includes/ti-paths.inc
 require ../includes/ti-staging.inc
