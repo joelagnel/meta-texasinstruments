@@ -1,0 +1,140 @@
+From ed5f8448674e30eb9fc3f59b2ae14d8b42c86b54 Mon Sep 17 00:00:00 2001
+From: Koen Kooi <koen@dominion.thruhere.net>
+Date: Thu, 29 Sep 2011 15:11:51 +0200
+Subject: [PATCH] board-am335x-evm: hack in gpio-led support for beaglebone
+
+Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
+---
+ arch/arm/mach-omap2/board-am335xevm.c |   79 ++++++++++++++++++++++++++++-----
+ 1 files changed, 67 insertions(+), 12 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 09d3814..3dd6a6e 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -20,6 +20,7 @@
+ #include <linux/phy.h>
+ #include <linux/spi/spi.h>
+ #include <linux/spi/flash.h>
++#include <linux/leds.h>
+ #include <linux/gpio.h>
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/nand.h>
+@@ -252,11 +253,11 @@ static struct pinmux_config rgmii2_pin_mux[] = {
+ 	{"gpmc_a2.rgmii2_td3", OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+ 	{"gpmc_a3.rgmii2_td2", OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+ 	{"gpmc_a4.rgmii2_td1", OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+-	{"gpmc_a5.rgmii2_td0", OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+-	{"gpmc_a6.rgmii2_tclk", OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT},
+-	{"gpmc_a7.rgmii2_rclk", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+-	{"gpmc_a8.rgmii2_rd3", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+-	{"gpmc_a9.rgmii2_rd2", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
++	{"gpmc_a5.rgmii2_td0", OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT}, // gpio 21
++	{"gpmc_a6.rgmii2_tclk", OMAP_MUX_MODE2 | AM335X_PIN_OUTPUT}, // gpio22
++	{"gpmc_a7.rgmii2_rclk", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN}, // gpio23
++	{"gpmc_a8.rgmii2_rd3", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN}, // gpio 24
++	{"gpmc_a9.rgmii2_rd2", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN}, 
+ 	{"gpmc_a10.rgmii2_rd1", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+ 	{"gpmc_a11.rgmii2_rd0", OMAP_MUX_MODE2 | AM335X_PIN_INPUT_PULLDOWN},
+ 	{"mdio_data.mdio_data", OMAP_MUX_MODE0 | AM335X_PIN_INPUT_PULLUP},
+@@ -577,6 +578,58 @@ static struct pinmux_config usb1_pin_mux[] = {
+ * Place all Platform specific data below.
+ */
+ 
++/* LEDS - gpio1_21 -> gpio1_24 */
++
++#define BEAGLEBONE_USR1_LED  GPIO_TO_PIN(1, 21)
++#define BEAGLEBONE_USR2_LED  GPIO_TO_PIN(1, 22)
++#define BEAGLEBONE_USR3_LED  GPIO_TO_PIN(1, 23)
++#define BEAGLEBONE_USR4_LED  GPIO_TO_PIN(1, 24)
++
++static struct gpio_led gpio_leds[] = {
++	{
++		.name			= "beaglebone::usr0",
++		.default_trigger	= "heartbeat",
++		.gpio			= BEAGLEBONE_USR1_LED,
++	},
++	{
++		.name			= "beaglebone::usr1",
++		.default_trigger	= "mmc0",
++		.gpio			= BEAGLEBONE_USR2_LED,
++	},
++	{
++		.name			= "beaglebone::usr2",
++		.gpio			= BEAGLEBONE_USR3_LED,
++	},
++	{
++		.name           = "beaglebone::usr3",
++		.gpio           = BEAGLEBONE_USR4_LED,
++	},
++};
++
++static struct gpio_led_platform_data gpio_led_info = {
++	.leds		= gpio_leds,
++	.num_leds	= ARRAY_SIZE(gpio_leds),
++};
++
++static struct platform_device leds_gpio = {
++	.name	= "leds-gpio",
++	.id	= -1,
++	.dev	= {
++		.platform_data	= &gpio_led_info,
++	},
++};
++
++static struct platform_device *bone_devices[] __initdata = {
++		    &leds_gpio,
++};
++
++static struct pinmux_config boneled_pin_mux[] = {
++    {"gpmc_a5.rgmii2_td0", OMAP_MUX_MODE7 | AM335X_PIN_OUTPUT}, // gpio 21
++    {"gpmc_a6.rgmii2_tclk", OMAP_MUX_MODE7 | AM335X_PIN_OUTPUT}, // gpio22
++    {"gpmc_a7.rgmii2_rclk", OMAP_MUX_MODE7 | AM335X_PIN_OUTPUT}, // gpio23
++    {"gpmc_a8.rgmii2_rd3", OMAP_MUX_MODE7 | AM335X_PIN_OUTPUT}, // gpio 24
++};
++
+ /* Audio Platform Data */
+ static u8 am335x_iis_serializer_direction0[] = {
+ 	TX_MODE,	RX_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+@@ -913,6 +966,14 @@ static void am335x_tsc_init(int evm_id, int profile)
+ 		pr_err("failed to register touchscreen device\n");
+ }
+ 
++static void bone_leds_init(int evm_id, int profil )
++{
++	int err;
++	setup_pin_mux(boneled_pin_mux);
++	err = platform_add_devices(bone_devices, ARRAY_SIZE(bone_devices));
++	if (err)
++		pr_err("failed to register LEDS\n");
++}
+ 
+ static void rgmii1_init(int evm_id, int profile)
+ {
+@@ -1182,8 +1243,6 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
+ 	{mcasp1_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_3) },
+ 	{mcasp0_init,	DEV_ON_DGHTR_BRD, PROFILE_7},
+ 	{rmii1_init,	DEV_ON_BASEBOARD, PROFILE_ALL},
+-	{rgmii2_init,	DEV_ON_DGHTR_BRD, (PROFILE_1 | PROFILE_2 |
+-						PROFILE_4 | PROFILE_6) },
+ 	{spi0_init,	DEV_ON_DGHTR_BRD, PROFILE_2},
+ 	{ecap0_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_1 |
+ 						PROFILE_2 | PROFILE_7) },
+@@ -1191,13 +1250,9 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
+ 						PROFILE_2 | PROFILE_7) },
+ 	{am335x_tsc_init, DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_1
+ 						| PROFILE_2 | PROFILE_7) },
+-	{mmc1_init,	DEV_ON_DGHTR_BRD, PROFILE_2},
+-	{mmc2_init,	DEV_ON_DGHTR_BRD, PROFILE_4},
++	{bone_leds_init,  DEV_ON_BASEBOARD, PROFILE_ALL},
+ 	{mmc0_init,	DEV_ON_BASEBOARD, (PROFILE_ALL& ~PROFILE_5)},
+ 	{mmc0_no_cd_init,	DEV_ON_BASEBOARD, PROFILE_5},
+-	{evm_nand_init,	DEV_ON_DGHTR_BRD, (PROFILE_ALL
+-						& ~PROFILE_2 & ~PROFILE_3)},
+-	{evm_nor_init,	DEV_ON_DGHTR_BRD, PROFILE_3},
+ 	{i2c1_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_3 | PROFILE_7)},
+ 	{usb0_init, 	DEV_ON_BASEBOARD, PROFILE_ALL},
+ 	{usb1_init, 	DEV_ON_BASEBOARD, PROFILE_ALL},
+-- 
+1.6.6.1
+

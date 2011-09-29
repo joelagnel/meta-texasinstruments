@@ -11,6 +11,7 @@ SRCREV = "90b625c03fe07ff4e285260172fb642a81d666ba"
 MACHINE_KERNEL_PR_append = "c+gitr${SRCREV}"
 
 SRC_URI = "git://github.com/joelagnel/linux-omap-2.6.git;branch=bone-bringup \
+           file://0001-board-am335x-evm-hack-in-gpio-led-support-for-beagle.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"
