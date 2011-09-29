@@ -1,4 +1,4 @@
-PR = "r2"
+PR = "r3"
 
 require u-boot.inc
 
@@ -8,7 +8,7 @@ DEFAULT_PREFERENCE_beaglebone = "99"
 
 SRC_URI = "git://github.com/joelagnel/u-boot.git;branch=bone-bringup \
           "
-SRCREV = "5387a71d905ea3bccd8bc4c9719e9292e96ed9d0"
+SRCREV = "81d39e0c2a88bfee58c8b7a3f8457869490cbba6"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=4c6cde5df68eff615d36789dc18edd3b"
 
