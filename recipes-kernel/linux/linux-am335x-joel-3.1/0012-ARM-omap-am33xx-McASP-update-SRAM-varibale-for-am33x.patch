@@ -1,0 +1,31 @@
+From bcfc433f48b9fa210707cb136d39ba229ca9ac13 Mon Sep 17 00:00:00 2001
+From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Date: Mon, 26 Sep 2011 18:42:14 +0530
+Subject: [PATCH 12/20] ARM:omap:am33xx: McASP: update SRAM varibale for am33xx
+
+Davinci PCM Driver uses SRAM related paramters "davinci_gen_pool" from davinci
+platform.
+
+Since AM335x Now uses Davinci PCM driver, update the same paramter using
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/include/asm/hardware/asp.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/include/asm/hardware/asp.h b/arch/arm/include/asm/hardware/asp.h
+index 54aff23..50821b8 100644
+--- a/arch/arm/include/asm/hardware/asp.h
++++ b/arch/arm/include/asm/hardware/asp.h
+@@ -135,4 +135,8 @@ enum dm365_clk_input_pin {
+ #define DAVINCI_MCASP_IIS_MODE	0
+ #define DAVINCI_MCASP_DIT_MODE	1
+ 
++#if (defined(CONFIG_SOC_OMAPAM33XX) && defined(CONFIG_SND_AM33XX_SOC))
++#define davinci_gen_pool omap_gen_pool
++#endif
++
+ #endif /* __ASM_HARDWARE_MCASP_H */
+-- 
+1.6.6.1
+

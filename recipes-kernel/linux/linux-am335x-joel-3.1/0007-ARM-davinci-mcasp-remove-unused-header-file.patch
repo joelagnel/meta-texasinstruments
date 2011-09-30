@@ -1,0 +1,27 @@
+From 18ff63be47086f15d246fe95c2361188886af61a Mon Sep 17 00:00:00 2001
+From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Date: Mon, 26 Sep 2011 18:16:19 +0530
+Subject: [PATCH 07/20] ARM:davinci:mcasp: remove unused header file
+
+parameters from <mach/mux.h> isnt used anywhere. Hence removed
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ sound/soc/davinci/davinci-evm.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/sound/soc/davinci/davinci-evm.c b/sound/soc/davinci/davinci-evm.c
+index 2d4fbda..b0fcf79 100644
+--- a/sound/soc/davinci/davinci-evm.c
++++ b/sound/soc/davinci/davinci-evm.c
+@@ -24,7 +24,6 @@
+ 
+ #include <asm/hardware/asp.h>
+ #include <mach/edma.h>
+-#include <mach/mux.h>
+ 
+ #include "davinci-pcm.h"
+ #include "davinci-i2s.h"
+-- 
+1.6.6.1
+

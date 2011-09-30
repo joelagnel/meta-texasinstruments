@@ -1,0 +1,29 @@
+From 9046dfa2155aa62d9ac4f1e100f1b175275f3257 Mon Sep 17 00:00:00 2001
+From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Date: Tue, 27 Sep 2011 23:10:18 +0530
+Subject: [PATCH 18/20] ARM:omap:hsmmc: Enable card Insert/Removal interrupt
+
+THis patch enables the Card Insertion/Removal bits since this interrupt
+is working
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ drivers/mmc/host/omap_hsmmc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index bfb20ca..d59cf83 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -79,7 +79,7 @@
+ #define CLKD_SHIFT		6
+ #define DTO_MASK		0x000F0000
+ #define DTO_SHIFT		16
+-#define INT_EN_MASK		0x307F0033
++#define INT_EN_MASK		0x307F00f3
+ #define BWR_ENABLE		(1 << 4)
+ #define BRR_ENABLE		(1 << 5)
+ #define DTO_ENABLE		(1 << 20)
+-- 
+1.6.6.1
+

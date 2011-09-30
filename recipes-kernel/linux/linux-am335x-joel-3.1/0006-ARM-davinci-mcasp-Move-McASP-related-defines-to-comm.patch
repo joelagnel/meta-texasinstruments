@@ -1,0 +1,494 @@
+From c3ff3c7a94473c3f7717a3a5409baa4c106cf9d4 Mon Sep 17 00:00:00 2001
+From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Date: Fri, 23 Sep 2011 13:52:57 +0530
+Subject: [PATCH 06/20] ARM:davinci:mcasp: Move McASP related defines to common place
+
+Davinci McASP IP & its Driver is shared by few OMAP platforms. Moving the
+McASP ddefines to a common place, helps to share the same header file
+across platforms
+
+This patch moves asp.h from
+arch/arm/mach-davinci/include/mach/asp.h -> arch/arm/include/asm/hardware/asp.h
+
+Header define check is also updated to reflect hardware name rather than
+platform
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/include/asm/hardware/asp.h         |  137 +++++++++++++++++++++++++++
+ arch/arm/mach-davinci/dm355.c               |    2 +-
+ arch/arm/mach-davinci/dm365.c               |    2 +-
+ arch/arm/mach-davinci/dm644x.c              |    2 +-
+ arch/arm/mach-davinci/dm646x.c              |    2 +-
+ arch/arm/mach-davinci/include/mach/asp.h    |  137 ---------------------------
+ arch/arm/mach-davinci/include/mach/da8xx.h  |    2 +-
+ arch/arm/mach-davinci/include/mach/dm355.h  |    2 +-
+ arch/arm/mach-davinci/include/mach/dm365.h  |    2 +-
+ arch/arm/mach-davinci/include/mach/dm644x.h |    2 +-
+ arch/arm/mach-davinci/include/mach/dm646x.h |    2 +-
+ sound/soc/davinci/davinci-evm.c             |    2 +-
+ sound/soc/davinci/davinci-i2s.c             |    2 +-
+ sound/soc/davinci/davinci-mcasp.h           |    2 +-
+ sound/soc/davinci/davinci-pcm.h             |    2 +-
+ 15 files changed, 150 insertions(+), 150 deletions(-)
+ create mode 100644 arch/arm/include/asm/hardware/asp.h
+ delete mode 100644 arch/arm/mach-davinci/include/mach/asp.h
+
+diff --git a/arch/arm/include/asm/hardware/asp.h b/arch/arm/include/asm/hardware/asp.h
+new file mode 100644
+index 0000000..6083870
+--- /dev/null
++++ b/arch/arm/include/asm/hardware/asp.h
+@@ -0,0 +1,137 @@
++/*
++ * <asm/hardware/asp.h> - DaVinci Audio Serial Port support
++ */
++#ifndef __ASM_HARDWARE_MCASP_H
++#define __ASM_HARDWARE_MCASP_H
++
++#include <mach/irqs.h>
++#include <mach/edma.h>
++
++/* Bases of dm644x and dm355 register banks */
++#define DAVINCI_ASP0_BASE	0x01E02000
++#define DAVINCI_ASP1_BASE	0x01E04000
++
++/* Bases of dm365 register banks */
++#define DAVINCI_DM365_ASP0_BASE	0x01D02000
++
++/* Bases of dm646x register banks */
++#define	DAVINCI_DM646X_MCASP0_REG_BASE		0x01D01000
++#define DAVINCI_DM646X_MCASP1_REG_BASE		0x01D01800
++
++/* Bases of da850/da830 McASP0  register banks */
++#define DAVINCI_DA8XX_MCASP0_REG_BASE	0x01D00000
++
++/* Bases of da830 McASP1 register banks */
++#define DAVINCI_DA830_MCASP1_REG_BASE	0x01D04000
++
++/* EDMA channels of dm644x and dm355 */
++#define DAVINCI_DMA_ASP0_TX	2
++#define DAVINCI_DMA_ASP0_RX	3
++#define DAVINCI_DMA_ASP1_TX	8
++#define DAVINCI_DMA_ASP1_RX	9
++
++/* EDMA channels of dm646x */
++#define	DAVINCI_DM646X_DMA_MCASP0_AXEVT0	6
++#define	DAVINCI_DM646X_DMA_MCASP0_AREVT0	9
++#define	DAVINCI_DM646X_DMA_MCASP1_AXEVT1	12
++
++/* EDMA channels of da850/da830 McASP0 */
++#define	DAVINCI_DA8XX_DMA_MCASP0_AREVT	0
++#define	DAVINCI_DA8XX_DMA_MCASP0_AXEVT	1
++
++/* EDMA channels of da830 McASP1 */
++#define	DAVINCI_DA830_DMA_MCASP1_AREVT	2
++#define	DAVINCI_DA830_DMA_MCASP1_AXEVT	3
++
++/* Interrupts */
++#define DAVINCI_ASP0_RX_INT	IRQ_MBRINT
++#define DAVINCI_ASP0_TX_INT	IRQ_MBXINT
++#define DAVINCI_ASP1_RX_INT	IRQ_MBRINT
++#define DAVINCI_ASP1_TX_INT	IRQ_MBXINT
++
++struct snd_platform_data {
++	u32 tx_dma_offset;
++	u32 rx_dma_offset;
++	enum dma_event_q asp_chan_q;	/* event queue number for ASP channel */
++	enum dma_event_q ram_chan_q;	/* event queue number for RAM channel */
++	unsigned int codec_fmt;
++	/*
++	 * Allowing this is more efficient and eliminates left and right swaps
++	 * caused by underruns, but will swap the left and right channels
++	 * when compared to previous behavior.
++	 */
++	unsigned enable_channel_combine:1;
++	unsigned sram_size_playback;
++	unsigned sram_size_capture;
++
++	/*
++	 * If McBSP peripheral gets the clock from an external pin,
++	 * there are three chooses, that are MCBSP_CLKX, MCBSP_CLKR
++	 * and MCBSP_CLKS.
++	 * Depending on different hardware connections it is possible
++	 * to use this setting to change the behaviour of McBSP
++	 * driver. The dm365_clk_input_pin enum is available for dm365
++	 */
++	int clk_input_pin;
++
++	/*
++	 * This flag works when both clock and FS are outputs for the cpu
++	 * and makes clock more accurate (FS is not symmetrical and the
++	 * clock is very fast.
++	 * The clock becoming faster is named
++	 * i2s continuous serial clock (I2S_SCK) and it is an externally
++	 * visible bit clock.
++	 *
++	 * first line : WordSelect
++	 * second line : ContinuousSerialClock
++	 * third line: SerialData
++	 *
++	 * SYMMETRICAL APPROACH:
++	 *   _______________________          LEFT
++	 * _|         RIGHT         |______________________|
++	 *     _   _         _   _   _   _         _   _
++	 *   _| |_| |_ x16 _| |_| |_| |_| |_ x16 _| |_| |_
++	 *     _   _         _   _   _   _         _   _
++	 *   _/ \_/ \_ ... _/ \_/ \_/ \_/ \_ ... _/ \_/ \_
++	 *    \_/ \_/       \_/ \_/ \_/ \_/       \_/ \_/
++	 *
++	 * ACCURATE CLOCK APPROACH:
++	 *   ______________          LEFT
++	 * _|     RIGHT    |_______________________________|
++	 *     _         _   _         _   _   _   _   _   _
++	 *   _| |_ x16 _| |_| |_ x16 _| |_| |_| |_| |_| |_| |
++	 *     _         _   _          _      dummy cycles
++	 *   _/ \_ ... _/ \_/ \_  ... _/ \__________________
++	 *    \_/       \_/ \_/        \_/
++	 *
++	 */
++	bool i2s_accurate_sck;
++
++	/* McASP specific fields */
++	int tdm_slots;
++	u8 op_mode;
++	u8 num_serializer;
++	u8 *serial_dir;
++	u8 version;
++	u8 txnumevt;
++	u8 rxnumevt;
++};
++
++enum {
++	MCASP_VERSION_1 = 0,	/* DM646x */
++	MCASP_VERSION_2,	/* DA8xx/OMAPL1x */
++};
++
++enum dm365_clk_input_pin {
++	MCBSP_CLKR = 0,		/* DM365 */
++	MCBSP_CLKS,
++};
++
++#define INACTIVE_MODE	0
++#define TX_MODE		1
++#define RX_MODE		2
++
++#define DAVINCI_MCASP_IIS_MODE	0
++#define DAVINCI_MCASP_DIT_MODE	1
++
++#endif /* __ASM_HARDWARE_MCASP_H */
+diff --git a/arch/arm/mach-davinci/dm355.c b/arch/arm/mach-davinci/dm355.c
+index 9bda687..85317c2 100644
+--- a/arch/arm/mach-davinci/dm355.c
++++ b/arch/arm/mach-davinci/dm355.c
+@@ -28,7 +28,7 @@
+ #include <mach/time.h>
+ #include <mach/serial.h>
+ #include <mach/common.h>
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ #include <mach/spi.h>
+ 
+ #include "clock.h"
+diff --git a/arch/arm/mach-davinci/dm365.c b/arch/arm/mach-davinci/dm365.c
+index d306034..7cbdaf3 100644
+--- a/arch/arm/mach-davinci/dm365.c
++++ b/arch/arm/mach-davinci/dm365.c
+@@ -31,7 +31,7 @@
+ #include <mach/time.h>
+ #include <mach/serial.h>
+ #include <mach/common.h>
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ #include <mach/keyscan.h>
+ #include <mach/spi.h>
+ 
+diff --git a/arch/arm/mach-davinci/dm644x.c b/arch/arm/mach-davinci/dm644x.c
+index 3949ed7..22aaa0b 100644
+--- a/arch/arm/mach-davinci/dm644x.c
++++ b/arch/arm/mach-davinci/dm644x.c
+@@ -25,7 +25,7 @@
+ #include <mach/time.h>
+ #include <mach/serial.h>
+ #include <mach/common.h>
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ 
+ #include "clock.h"
+ #include "mux.h"
+diff --git a/arch/arm/mach-davinci/dm646x.c b/arch/arm/mach-davinci/dm646x.c
+index b161317..333f27b 100644
+--- a/arch/arm/mach-davinci/dm646x.c
++++ b/arch/arm/mach-davinci/dm646x.c
+@@ -26,7 +26,7 @@
+ #include <mach/time.h>
+ #include <mach/serial.h>
+ #include <mach/common.h>
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ 
+ #include "clock.h"
+ #include "mux.h"
+diff --git a/arch/arm/mach-davinci/include/mach/asp.h b/arch/arm/mach-davinci/include/mach/asp.h
+deleted file mode 100644
+index 9aa2409..0000000
+--- a/arch/arm/mach-davinci/include/mach/asp.h
++++ /dev/null
+@@ -1,137 +0,0 @@
+-/*
+- * <mach/asp.h> - DaVinci Audio Serial Port support
+- */
+-#ifndef __ASM_ARCH_DAVINCI_ASP_H
+-#define __ASM_ARCH_DAVINCI_ASP_H
+-
+-#include <mach/irqs.h>
+-#include <mach/edma.h>
+-
+-/* Bases of dm644x and dm355 register banks */
+-#define DAVINCI_ASP0_BASE	0x01E02000
+-#define DAVINCI_ASP1_BASE	0x01E04000
+-
+-/* Bases of dm365 register banks */
+-#define DAVINCI_DM365_ASP0_BASE	0x01D02000
+-
+-/* Bases of dm646x register banks */
+-#define	DAVINCI_DM646X_MCASP0_REG_BASE		0x01D01000
+-#define DAVINCI_DM646X_MCASP1_REG_BASE		0x01D01800
+-
+-/* Bases of da850/da830 McASP0  register banks */
+-#define DAVINCI_DA8XX_MCASP0_REG_BASE	0x01D00000
+-
+-/* Bases of da830 McASP1 register banks */
+-#define DAVINCI_DA830_MCASP1_REG_BASE	0x01D04000
+-
+-/* EDMA channels of dm644x and dm355 */
+-#define DAVINCI_DMA_ASP0_TX	2
+-#define DAVINCI_DMA_ASP0_RX	3
+-#define DAVINCI_DMA_ASP1_TX	8
+-#define DAVINCI_DMA_ASP1_RX	9
+-
+-/* EDMA channels of dm646x */
+-#define	DAVINCI_DM646X_DMA_MCASP0_AXEVT0	6
+-#define	DAVINCI_DM646X_DMA_MCASP0_AREVT0	9
+-#define	DAVINCI_DM646X_DMA_MCASP1_AXEVT1	12
+-
+-/* EDMA channels of da850/da830 McASP0 */
+-#define	DAVINCI_DA8XX_DMA_MCASP0_AREVT	0
+-#define	DAVINCI_DA8XX_DMA_MCASP0_AXEVT	1
+-
+-/* EDMA channels of da830 McASP1 */
+-#define	DAVINCI_DA830_DMA_MCASP1_AREVT	2
+-#define	DAVINCI_DA830_DMA_MCASP1_AXEVT	3
+-
+-/* Interrupts */
+-#define DAVINCI_ASP0_RX_INT	IRQ_MBRINT
+-#define DAVINCI_ASP0_TX_INT	IRQ_MBXINT
+-#define DAVINCI_ASP1_RX_INT	IRQ_MBRINT
+-#define DAVINCI_ASP1_TX_INT	IRQ_MBXINT
+-
+-struct snd_platform_data {
+-	u32 tx_dma_offset;
+-	u32 rx_dma_offset;
+-	enum dma_event_q asp_chan_q;	/* event queue number for ASP channel */
+-	enum dma_event_q ram_chan_q;	/* event queue number for RAM channel */
+-	unsigned int codec_fmt;
+-	/*
+-	 * Allowing this is more efficient and eliminates left and right swaps
+-	 * caused by underruns, but will swap the left and right channels
+-	 * when compared to previous behavior.
+-	 */
+-	unsigned enable_channel_combine:1;
+-	unsigned sram_size_playback;
+-	unsigned sram_size_capture;
+-
+-	/*
+-	 * If McBSP peripheral gets the clock from an external pin,
+-	 * there are three chooses, that are MCBSP_CLKX, MCBSP_CLKR
+-	 * and MCBSP_CLKS.
+-	 * Depending on different hardware connections it is possible
+-	 * to use this setting to change the behaviour of McBSP
+-	 * driver. The dm365_clk_input_pin enum is available for dm365
+-	 */
+-	int clk_input_pin;
+-
+-	/*
+-	 * This flag works when both clock and FS are outputs for the cpu
+-	 * and makes clock more accurate (FS is not symmetrical and the
+-	 * clock is very fast.
+-	 * The clock becoming faster is named
+-	 * i2s continuous serial clock (I2S_SCK) and it is an externally
+-	 * visible bit clock.
+-	 *
+-	 * first line : WordSelect
+-	 * second line : ContinuousSerialClock
+-	 * third line: SerialData
+-	 *
+-	 * SYMMETRICAL APPROACH:
+-	 *   _______________________          LEFT
+-	 * _|         RIGHT         |______________________|
+-	 *     _   _         _   _   _   _         _   _
+-	 *   _| |_| |_ x16 _| |_| |_| |_| |_ x16 _| |_| |_
+-	 *     _   _         _   _   _   _         _   _
+-	 *   _/ \_/ \_ ... _/ \_/ \_/ \_/ \_ ... _/ \_/ \_
+-	 *    \_/ \_/       \_/ \_/ \_/ \_/       \_/ \_/
+-	 *
+-	 * ACCURATE CLOCK APPROACH:
+-	 *   ______________          LEFT
+-	 * _|     RIGHT    |_______________________________|
+-	 *     _         _   _         _   _   _   _   _   _
+-	 *   _| |_ x16 _| |_| |_ x16 _| |_| |_| |_| |_| |_| |
+-	 *     _         _   _          _      dummy cycles
+-	 *   _/ \_ ... _/ \_/ \_  ... _/ \__________________
+-	 *    \_/       \_/ \_/        \_/
+-	 *
+-	 */
+-	bool i2s_accurate_sck;
+-
+-	/* McASP specific fields */
+-	int tdm_slots;
+-	u8 op_mode;
+-	u8 num_serializer;
+-	u8 *serial_dir;
+-	u8 version;
+-	u8 txnumevt;
+-	u8 rxnumevt;
+-};
+-
+-enum {
+-	MCASP_VERSION_1 = 0,	/* DM646x */
+-	MCASP_VERSION_2,	/* DA8xx/OMAPL1x */
+-};
+-
+-enum dm365_clk_input_pin {
+-	MCBSP_CLKR = 0,		/* DM365 */
+-	MCBSP_CLKS,
+-};
+-
+-#define INACTIVE_MODE	0
+-#define TX_MODE		1
+-#define RX_MODE		2
+-
+-#define DAVINCI_MCASP_IIS_MODE	0
+-#define DAVINCI_MCASP_DIT_MODE	1
+-
+-#endif /* __ASM_ARCH_DAVINCI_ASP_H */
+diff --git a/arch/arm/mach-davinci/include/mach/da8xx.h b/arch/arm/mach-davinci/include/mach/da8xx.h
+index eaca7d8..2b2240e 100644
+--- a/arch/arm/mach-davinci/include/mach/da8xx.h
++++ b/arch/arm/mach-davinci/include/mach/da8xx.h
+@@ -20,7 +20,7 @@
+ #include <mach/serial.h>
+ #include <mach/edma.h>
+ #include <mach/i2c.h>
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ #include <mach/mmc.h>
+ #include <mach/usb.h>
+ #include <mach/pm.h>
+diff --git a/arch/arm/mach-davinci/include/mach/dm355.h b/arch/arm/mach-davinci/include/mach/dm355.h
+index 36dff4a..a5829ea 100644
+--- a/arch/arm/mach-davinci/include/mach/dm355.h
++++ b/arch/arm/mach-davinci/include/mach/dm355.h
+@@ -12,7 +12,7 @@
+ #define __ASM_ARCH_DM355_H
+ 
+ #include <mach/hardware.h>
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ #include <media/davinci/vpfe_capture.h>
+ 
+ #define DM355_ASYNC_EMIF_CONTROL_BASE	0x01E10000
+diff --git a/arch/arm/mach-davinci/include/mach/dm365.h b/arch/arm/mach-davinci/include/mach/dm365.h
+index 2563bf4..92d8db2 100644
+--- a/arch/arm/mach-davinci/include/mach/dm365.h
++++ b/arch/arm/mach-davinci/include/mach/dm365.h
+@@ -16,7 +16,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/davinci_emac.h>
+ #include <mach/hardware.h>
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ #include <mach/keyscan.h>
+ #include <media/davinci/vpfe_capture.h>
+ 
+diff --git a/arch/arm/mach-davinci/include/mach/dm644x.h b/arch/arm/mach-davinci/include/mach/dm644x.h
+index 5a1b26d..dd1bfa3 100644
+--- a/arch/arm/mach-davinci/include/mach/dm644x.h
++++ b/arch/arm/mach-davinci/include/mach/dm644x.h
+@@ -24,7 +24,7 @@
+ 
+ #include <linux/davinci_emac.h>
+ #include <mach/hardware.h>
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ #include <media/davinci/vpfe_capture.h>
+ 
+ #define DM644X_EMAC_BASE		(0x01C80000)
+diff --git a/arch/arm/mach-davinci/include/mach/dm646x.h b/arch/arm/mach-davinci/include/mach/dm646x.h
+index 2a00fe5..8294bc6 100644
+--- a/arch/arm/mach-davinci/include/mach/dm646x.h
++++ b/arch/arm/mach-davinci/include/mach/dm646x.h
+@@ -12,7 +12,7 @@
+ #define __ASM_ARCH_DM646X_H
+ 
+ #include <mach/hardware.h>
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ #include <linux/i2c.h>
+ #include <linux/videodev2.h>
+ #include <linux/davinci_emac.h>
+diff --git a/sound/soc/davinci/davinci-evm.c b/sound/soc/davinci/davinci-evm.c
+index fe79842..2d4fbda 100644
+--- a/sound/soc/davinci/davinci-evm.c
++++ b/sound/soc/davinci/davinci-evm.c
+@@ -22,7 +22,7 @@
+ #include <asm/dma.h>
+ #include <asm/mach-types.h>
+ 
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ #include <mach/edma.h>
+ #include <mach/mux.h>
+ 
+diff --git a/sound/soc/davinci/davinci-i2s.c b/sound/soc/davinci/davinci-i2s.c
+index d0d60b8..c97c5bc 100644
+--- a/sound/soc/davinci/davinci-i2s.c
++++ b/sound/soc/davinci/davinci-i2s.c
+@@ -23,7 +23,7 @@
+ #include <sound/initval.h>
+ #include <sound/soc.h>
+ 
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ 
+ #include "davinci-pcm.h"
+ #include "davinci-i2s.h"
+diff --git a/sound/soc/davinci/davinci-mcasp.h b/sound/soc/davinci/davinci-mcasp.h
+index 4681acc..0a81823 100644
+--- a/sound/soc/davinci/davinci-mcasp.h
++++ b/sound/soc/davinci/davinci-mcasp.h
+@@ -19,7 +19,7 @@
+ #define DAVINCI_MCASP_H
+ 
+ #include <linux/io.h>
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ #include "davinci-pcm.h"
+ 
+ #define DAVINCI_MCASP_RATES	SNDRV_PCM_RATE_8000_96000
+diff --git a/sound/soc/davinci/davinci-pcm.h b/sound/soc/davinci/davinci-pcm.h
+index c0d6c9b..2c3eadd 100644
+--- a/sound/soc/davinci/davinci-pcm.h
++++ b/sound/soc/davinci/davinci-pcm.h
+@@ -13,7 +13,7 @@
+ #define _DAVINCI_PCM_H
+ 
+ #include <mach/edma.h>
+-#include <mach/asp.h>
++#include <asm/hardware/asp.h>
+ 
+ 
+ struct davinci_pcm_dma_params {
+-- 
+1.6.6.1
+

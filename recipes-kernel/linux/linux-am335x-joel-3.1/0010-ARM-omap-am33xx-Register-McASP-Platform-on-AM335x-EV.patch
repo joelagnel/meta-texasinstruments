@@ -1,0 +1,268 @@
+From 89a6b708521ed4f98927f94844e62ce1bd902e31 Mon Sep 17 00:00:00 2001
+From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+Date: Mon, 26 Sep 2011 16:37:54 +0530
+Subject: [PATCH 10/20] ARM:omap:am33xx: Register McASP Platform on AM335x EVM
+
+This patch adds the hardware info like base addresses, EDMA events,
+interrupt nos. and other module specific data for the McASP IP.
+
+Signed-off-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+---
+ arch/arm/include/asm/hardware/asp.h      |    2 +-
+ arch/arm/mach-omap2/board-am335xevm.c    |   48 ++++++++++++++++++++++++-
+ arch/arm/mach-omap2/devices.c            |   57 ++++++++++++++++++++++++++++++
+ arch/arm/mach-omap2/devices.h            |    2 +
+ arch/arm/mach-omap2/include/mach/sram.h  |   14 +++++++
+ arch/arm/plat-omap/include/plat/am33xx.h |    3 ++
+ 6 files changed, 123 insertions(+), 3 deletions(-)
+ create mode 100644 arch/arm/mach-omap2/include/mach/sram.h
+
+diff --git a/arch/arm/include/asm/hardware/asp.h b/arch/arm/include/asm/hardware/asp.h
+index e3d7d7e..54aff23 100644
+--- a/arch/arm/include/asm/hardware/asp.h
++++ b/arch/arm/include/asm/hardware/asp.h
+@@ -120,7 +120,7 @@ struct snd_platform_data {
+ enum {
+ 	MCASP_VERSION_1 = 0,	/* DM646x */
+ 	MCASP_VERSION_2,	/* DA8xx/OMAPL1x */
+-	MCASP_VERSION_3,
++	MCASP_VERSION_3,	/* AM33xx */
+ };
+ 
+ enum dm365_clk_input_pin {
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 51073c6..ff93fe4 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -33,6 +33,7 @@
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
++#include <asm/hardware/asp.h>
+ 
+ #include <plat/irqs.h>
+ #include <plat/board.h>
+@@ -43,6 +44,10 @@
+ /* LCD controller is similar to DA850 */
+ #include <video/da8xx-fb.h>
+ 
++#include "board-flash.h"
++#include "mux.h"
++#include "devices.h"
++
+ static const struct display_panel disp_panel = {
+ 	WVGA,
+ 	32,
+@@ -104,8 +109,25 @@ static struct platform_device tsc_device = {
+ 	.resource       = tsc_resources,
+ };
+ 
+-#include "board-flash.h"
+-#include "mux.h"
++static u8 am335x_iis_serializer_direction1[] = {
++	INACTIVE_MODE,	INACTIVE_MODE,	TX_MODE,	RX_MODE,
++	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
++	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
++	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
++};
++
++static struct snd_platform_data am335x_evm_snd_data1 = {
++	.tx_dma_offset	= 0x46400000,	/* McASP1 */
++	.rx_dma_offset	= 0x46400000,
++	.op_mode	= DAVINCI_MCASP_IIS_MODE,
++	.num_serializer	= ARRAY_SIZE(am335x_iis_serializer_direction1),
++	.tdm_slots	= 2,
++	.serial_dir	= am335x_iis_serializer_direction1,
++	.asp_chan_q	= EVENTQ_2,
++	.version	= MCASP_VERSION_3,
++	.txnumevt	= 1,
++	.rxnumevt	= 1,
++};
+ 
+ #ifdef CONFIG_OMAP_MUX
+ static struct omap_board_mux board_mux[] __initdata = {
+@@ -362,6 +384,16 @@ static struct pinmux_config i2c1_pin_mux[] = {
+ 	{NULL, 0},
+ };
+ 
++/* Module pin mux for mcasp1 */
++static struct pinmux_config mcasp1_pin_mux[] = {
++	{"mii1_crs.mcasp1_aclkx", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
++	{"mii1_rxerr.mcasp1_fsx", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
++	{"mii1_col.mcasp1_axr2", OMAP_MUX_MODE4 | AM335X_PIN_INPUT_PULLDOWN},
++	{"rmii1_refclk.mcasp1_axr3", OMAP_MUX_MODE4 |
++						AM335X_PIN_INPUT_PULLDOWN},
++	{NULL, 0},
++};
++
+ /*
+ * @pin_mux - single module pin-mux structure which defines pin-mux
+ *			details for all its pins.
+@@ -581,6 +613,7 @@ static void evm_nand_init(int evm_id, int profile)
+ 
+ static struct i2c_board_info __initdata am335x_i2c_boardinfo1[] = {
+ 	{
++		I2C_BOARD_INFO("tlv320aic3x", 0x1b),
+ 	}
+ };
+ 
+@@ -592,6 +625,15 @@ static void i2c1_init(int evm_id, int profile)
+ 	return;
+ }
+ 
++/* Setup McASP 1 */
++static void mcasp1_init(int evm_id, int profile)
++{
++	/* Configure McASP */
++	setup_pin_mux(mcasp1_pin_mux);
++	am335x_register_mcasp1(&am335x_evm_snd_data1);
++	return;
++}
++
+ /* Low-Cost EVM */
+ static struct evm_dev_cfg low_cost_evm_dev_cfg[] = {
+ 	{rgmii1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+@@ -617,6 +659,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
+ 	{evm_nand_init, DEV_ON_DGHTR_BRD,
+ 		(PROFILE_ALL & ~PROFILE_2 & ~PROFILE_3)},
+ 	{i2c1_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_3 | PROFILE_7)},
++	{mcasp1_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_3) },
+ 	{NULL, 0, 0},
+ };
+ 
+@@ -640,6 +683,7 @@ static struct evm_dev_cfg ip_phn_evm_dev_cfg[] = {
+ 	{usb1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+ 	{evm_nand_init, DEV_ON_DGHTR_BRD, PROFILE_NONE},
+ 	{i2c1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
++	{mcasp1_init,	DEV_ON_DGHTR_BRD, PROFILE_NONE},
+ 	{NULL, 0, 0},
+ };
+ 
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index 887bf3d..dbe464b 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -31,6 +31,8 @@
+ #include <mach/edma.h>
+ #endif
+ 
++#include <asm/hardware/asp.h>
++
+ #include <plat/tc.h>
+ #include <plat/board.h>
+ #include <plat/mcbsp.h>
+@@ -170,6 +172,60 @@ void __init am335x_register_lcdc(struct da8xx_lcdc_platform_data *pdata)
+ 
+ }
+ 
++#if defined (CONFIG_SND_AM335X_SOC_EVM)
++static struct resource am335x_mcasp1_resource[] = {
++	{
++		.name = "mcasp1",
++		.start = AM335X_ASP1_BASE,
++		.end = AM335X_ASP1_BASE + (SZ_1K * 12) - 1,
++		.flags = IORESOURCE_MEM,
++	},
++	/* TX event */
++	{
++		.start = AM335X_DMA_MCASP1_X,
++		.end = AM335X_DMA_MCASP1_X,
++		.flags = IORESOURCE_DMA,
++	},
++	/* RX event */
++	{
++		.start = AM335X_DMA_MCASP1_R,
++		.end = AM335X_DMA_MCASP1_R,
++		.flags = IORESOURCE_DMA,
++	},
++};
++
++static struct platform_device am335x_mcasp1_device = {
++	.name = "davinci-mcasp",
++	.id = 1,
++	.num_resources = ARRAY_SIZE(am335x_mcasp1_resource),
++	.resource = am335x_mcasp1_resource,
++};
++
++void __init am335x_register_mcasp1(struct snd_platform_data *pdata)
++{
++	am335x_mcasp1_device.dev.platform_data = pdata;
++	platform_device_register(&am335x_mcasp1_device);
++}
++
++#else
++void __init am335x_register_mcasp1(struct snd_platform_data *pdata) {}
++#endif
++
++#if defined(CONFIG_SND_AM33XX_SOC)
++struct platform_device am33xx_pcm_device = {
++	.name		= "davinci-pcm-audio",
++	.id		= -1,
++};
++
++static void am33xx_init_pcm(void)
++{
++	platform_device_register(&am33xx_pcm_device);
++}
++
++#else
++static inline void am33xx_init_pcm(void) {}
++#endif
++
+ static struct resource omap3isp_resources[] = {
+ 	{
+ 		.start		= OMAP3430_ISP_BASE,
+@@ -983,6 +1039,7 @@ static int __init omap2_init_devices(void)
+ 	omap_init_aes();
+ 	omap_init_vout();
+ 	am33xx_register_edma();
++	am33xx_init_pcm();
+ 
+ 	return 0;
+ }
+diff --git a/arch/arm/mach-omap2/devices.h b/arch/arm/mach-omap2/devices.h
+index f61eb6e..10e4603 100644
+--- a/arch/arm/mach-omap2/devices.h
++++ b/arch/arm/mach-omap2/devices.h
+@@ -16,4 +16,6 @@ struct isp_platform_data;
+ 
+ int omap3_init_camera(struct isp_platform_data *pdata);
+ 
++void __init am335x_register_mcasp1(struct snd_platform_data *pdata);
++
+ #endif
+diff --git a/arch/arm/mach-omap2/include/mach/sram.h b/arch/arm/mach-omap2/include/mach/sram.h
+new file mode 100644
+index 0000000..7869e2f
+--- /dev/null
++++ b/arch/arm/mach-omap2/include/mach/sram.h
+@@ -0,0 +1,14 @@
++/*
++ * arch/arm/mach-omap2/include/mach/sram.h
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef __ARCH_ARM_SRAM_H
++#define __ARCH_ARM_SRAM_H
++
++#include <plat/sram.h>
++
++#endif
+diff --git a/arch/arm/plat-omap/include/plat/am33xx.h b/arch/arm/plat-omap/include/plat/am33xx.h
+index b912305..79c5cf6 100644
+--- a/arch/arm/plat-omap/include/plat/am33xx.h
++++ b/arch/arm/plat-omap/include/plat/am33xx.h
+@@ -29,4 +29,7 @@
+ 
+ #define AM335X_TSC_BASE		0x44E0D000
+ 
++#define AM335X_ASP0_BASE	0x48038000
++#define AM335X_ASP1_BASE	0x4803C000
++
+ #endif /* __ASM_ARCH_AM33XX_H */
+-- 
+1.6.6.1
+
