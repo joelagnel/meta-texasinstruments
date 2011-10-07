@@ -33,6 +33,7 @@ file://0018-ARM-omap-hsmmc-Enable-card-Insert-Removal-interrupt.patch \
 file://0019-ARM-omap-am33xx-Register-HSMMC-Platform-on-AM335x-EV.patch \
 file://0020-ARM-omap-am33xx-HSMMC-update-hwmod-data.patch \
 file://0001-am335x-evm-hack-in-LED-support-for-beaglebone.patch \
+file://0001-f_rndis-HACK-around-undefined-variables.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"
