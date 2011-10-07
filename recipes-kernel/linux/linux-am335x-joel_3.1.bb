@@ -9,7 +9,7 @@ DEFAULT_PREFERENCE = "-1"
 SRCREV = "da6bf24fa53a44d7ee7298fa0a41c55b8f59f044"
 
 # The main PR is now using MACHINE_KERNEL_PR, for omap3 see conf/machine/include/omap3.inc
-MACHINE_KERNEL_PR_append = "a+gitr${SRCREV}"
+MACHINE_KERNEL_PR_append = "b+gitr${SRCREV}"
 
 SRC_URI = "git://github.com/joelagnel/linux-omap-2.6.git;branch=kernel-3.1-psp \
 file://0001-ARM-omap-am33xx-ADD-support-i2c1.patch \
@@ -32,6 +32,7 @@ file://0017-ARM-omap-hsmmc-Support-new-HSMMC-IP-Variant.patch \
 file://0018-ARM-omap-hsmmc-Enable-card-Insert-Removal-interrupt.patch \
 file://0019-ARM-omap-am33xx-Register-HSMMC-Platform-on-AM335x-EV.patch \
 file://0020-ARM-omap-am33xx-HSMMC-update-hwmod-data.patch \
+file://0001-am335x-evm-hack-in-LED-support-for-beaglebone.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"
