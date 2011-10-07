@@ -1,7 +1,7 @@
-From 0355dafa08da7fa680b8d1c8ec99481613a3058d Mon Sep 17 00:00:00 2001
+From 4513349c9f1b4834245d5632398c113dc393e570 Mon Sep 17 00:00:00 2001
 From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
 Date: Tue, 27 Sep 2011 19:59:34 +0530
-Subject: [PATCH 20/20] ARM:omap:am33xx: HSMMC: update hwmod data
+Subject: [PATCH 20/29] ARM:omap:am33xx: HSMMC: update hwmod data
 
 This patch updates the HWMOD data for HSMMC[0,1 & 2] found on AM33xx platform.
 Also, Adds the missing DMA event number for MMCHS2

@@ -1,7 +1,7 @@
-From 9046dfa2155aa62d9ac4f1e100f1b175275f3257 Mon Sep 17 00:00:00 2001
+From 538ee8a5f7f97c4276bf94a1fac27f4a895482a0 Mon Sep 17 00:00:00 2001
 From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
 Date: Tue, 27 Sep 2011 23:10:18 +0530
-Subject: [PATCH 18/20] ARM:omap:hsmmc: Enable card Insert/Removal interrupt
+Subject: [PATCH 18/29] ARM:omap:hsmmc: Enable card Insert/Removal interrupt
 
 THis patch enables the Card Insertion/Removal bits since this interrupt
 is working

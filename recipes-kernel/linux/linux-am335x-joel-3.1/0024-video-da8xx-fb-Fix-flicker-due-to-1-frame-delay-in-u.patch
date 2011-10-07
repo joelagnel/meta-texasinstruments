@@ -1,0 +1,120 @@
+From 915cf1a5d9ec3ca3c195b8b7e6a6d7690c2b06be Mon Sep 17 00:00:00 2001
+From: Manjunathappa, Prakash <prakash.pm@ti.com>
+Date: Tue, 27 Sep 2011 11:31:28 +0530
+Subject: [PATCH 24/29] video: da8xx-fb: Fix flicker due to 1 frame delay in updated frame
+
+There is flicker/tearing issue was observed with current FB driver.
+Below link to wiki describes the issue and it also has link to
+application with which issue can be reproduced.
+http://ap-fpdsp-swapps.dal.design.ti.com/index.php/DA8XX_LCDC_Linux_FB_FAQs
+Issue is because of 2 active DMA channels ping ponging among them
+along with usage of 2 DDR buffer ping pong and application is not
+aware of active DMA channel.
+Below steps describe issue:
+1)Initially assume both buffers FB0 and FB1 are programmed for buffer-0.
+2)On EOF0: Program FB0 for buffer-1, indicate(wake up) application
+ to fill up buffer-0. As FB1 is active and continues to DMA buffer-0
+(which is being filled), leading to tearing/flickering issue.
+3)On EOF1: Program FB1 for buffer-0, indicate(wake up) application to
+ fill up buffer-1. As FB0 is active and continues to DMA buffer-1(which
+ is being filled), leading to tearing/flickering issue.
+4)On EOF0: Program FB0 for buffer-1, indicate(wake up) application to fill
+ up buffer-0. As FB1 is active and continues to DMA buffer-0(which is being
+ filled), leading to tearing/flickering issue.
+...
+The above steps also depicts that there is one frame delay for each
+frame panned by application.
+Patch fixes the issue by keeping track free DMA channel and configures
+it in driver PAN callback so that panned frame from application gets
+displayed in next frame period.
+
+Signed-off-by: Nellutla, Aditya <aditya.n@ti.com>
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+ drivers/video/da8xx-fb.c |   28 ++++++++++++++++++++++++++++
+ 1 files changed, 28 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index e715820..4f5850f 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -30,6 +30,7 @@
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
+ #include <linux/console.h>
++#include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <video/da8xx-fb.h>
+ #include <asm/mach-types.h>
+@@ -161,6 +162,13 @@ struct da8xx_fb_par {
+ 	wait_queue_head_t	vsync_wait;
+ 	int			vsync_flag;
+ 	int			vsync_timeout;
++	spinlock_t		lock_for_chan_update;
++
++	/*
++	 * LCDC has 2 ping pong DMA channels, channel 0
++	 * and channel 1.
++	 */
++	unsigned int		which_dma_channel_done;
+ #ifdef CONFIG_CPU_FREQ
+ 	struct notifier_block	freq_transition;
+ #endif
+@@ -771,6 +779,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
+ 		lcdc_write(stat, LCD_MASKED_STAT_REG);
+ 
+ 		if (stat & LCD_END_OF_FRAME0) {
++			par->which_dma_channel_done = 0;
+ 			lcdc_write(par->dma_start,
+ 				   LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
+ 			lcdc_write(par->dma_end,
+@@ -782,6 +791,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
+ 		}
+ 
+ 		if (stat & LCD_END_OF_FRAME1) {
++			par->which_dma_channel_done = 1;
+ 			lcdc_write(par->dma_start,
+ 				   LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
+ 			lcdc_write(par->dma_end,
+@@ -1099,6 +1109,7 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
+ 	struct fb_fix_screeninfo    *fix = &fbi->fix;
+ 	unsigned int end;
+ 	unsigned int start;
++	unsigned long irq_flags;
+ 
+ 	if (var->xoffset != fbi->var.xoffset ||
+ 			var->yoffset != fbi->var.yoffset) {
+@@ -1116,6 +1127,21 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
+ 			end	= start + var->yres * fix->line_length - 1;
+ 			par->dma_start	= start;
+ 			par->dma_end	= end;
++			spin_lock_irqsave(&par->lock_for_chan_update,
++					irq_flags);
++			if (par->which_dma_channel_done == 0) {
++				lcdc_write(par->dma_start,
++					   LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
++				lcdc_write(par->dma_end,
++					   LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
++			} else if (par->which_dma_channel_done == 1) {
++				lcdc_write(par->dma_start,
++					   LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
++				lcdc_write(par->dma_end,
++					   LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
++			}
++			spin_unlock_irqrestore(&par->lock_for_chan_update,
++					irq_flags);
+ 		}
+ 	}
+ 
+@@ -1350,6 +1376,8 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	/* initialize the vsync wait queue */
+ 	init_waitqueue_head(&par->vsync_wait);
+ 	par->vsync_timeout = HZ / 5;
++	par->which_dma_channel_done = -1;
++	spin_lock_init(&par->lock_for_chan_update);
+ 
+ 	/* Register the Frame Buffer  */
+ 	if (register_framebuffer(da8xx_fb_info) < 0) {
+-- 
+1.6.6.1
+

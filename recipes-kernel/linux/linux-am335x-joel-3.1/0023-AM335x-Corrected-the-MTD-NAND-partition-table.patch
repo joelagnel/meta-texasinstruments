@@ -1,0 +1,67 @@
+From fa0670e07bd4453278107f6fbecc49546174bb90 Mon Sep 17 00:00:00 2001
+From: Philip, Avinash <avinashphilip@ti.com>
+Date: Fri, 30 Sep 2011 21:32:39 +0530
+Subject: [PATCH 23/29] AM335x: Corrected the MTD NAND partition table
+
+MTD NAND partition table is coreected to acoomodate 4 blocks for
+U-boot.min in the case of NAND flash device.
+
+0x000000000000-0x000000080000 : "U-Boot-min"
+0x000000080000-0x0000002c0000 : "U-Boot"
+0x0000002c0000-0x0000002e0000 : "U-Boot Env"
+0x0000002e0000-0x000000720000 : "Kernel"
+0x000000720000-0x00000cf40000 : "File System"
+0x00000cf40000-0x000010000000 : "Reserved"
+
+Signed-off-by: Philip, Avinash <avinashphilip@ti.com>
+---
+ arch/arm/mach-omap2/board-am335xevm.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
+index 0457556..0b91789 100644
+--- a/arch/arm/mach-omap2/board-am335xevm.c
++++ b/arch/arm/mach-omap2/board-am335xevm.c
+@@ -652,33 +652,33 @@ static struct mtd_partition am335x_nand_partitions[] = {
+ 	{
+ 		.name           = "U-Boot-min",
+ 		.offset         = 0,                    /* Offset = 0x0 */
+-		.size           = SZ_128K,
++		.size           = 4*SZ_128K,
+ 		.mask_flags     = MTD_WRITEABLE,        /* force read-only */
+ 	},
+ 	{
+ 		.name           = "U-Boot",
+-		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x128K */
++		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x8000 */
+ 		.size           = 18 * SZ_128K,
+ 		.mask_flags     = MTD_WRITEABLE,        /* force read-only */
+ 	},
+ 	{
+ 		.name           = "U-Boot Env",
+-		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x260000 */
++		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x2c0000 */
+ 		.size           = 1 * SZ_128K,
+ 	},
+ 	{
+ 		.name           = "Kernel",
+-		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x280000 */
++		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x2E0000 */
+ 		.size           = 34 * SZ_128K,
+ 	},
+ 	{
+ 		.name           = "File System",
+-		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x6C0000 */
++		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x720000 */
+ 		.size           = 1601 * SZ_128K,
+ 	},
+ 	{
+ 		.name           = "Reserved",
+-		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0xCEE0000 */
++		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0xCf40000 */
+ 		.size           = MTDPART_SIZ_FULL,
+ 	},
+ };
+-- 
+1.6.6.1
+

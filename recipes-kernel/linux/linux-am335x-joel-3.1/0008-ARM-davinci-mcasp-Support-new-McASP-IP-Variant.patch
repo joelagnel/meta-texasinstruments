@@ -1,7 +1,7 @@
 From abeaaf2460f6e1d7ec7e3fc88ca50b145f9e342c Mon Sep 17 00:00:00 2001
 From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
 Date: Fri, 23 Sep 2011 17:47:35 +0530
-Subject: [PATCH 08/20] ARM:davinci:mcasp: Support new McASP IP Variant
+Subject: [PATCH 08/29] ARM:davinci:mcasp: Support new McASP IP Variant
 
 Few OMAP platform has a new Variant of McASP than those found on Davinci
 Platform.

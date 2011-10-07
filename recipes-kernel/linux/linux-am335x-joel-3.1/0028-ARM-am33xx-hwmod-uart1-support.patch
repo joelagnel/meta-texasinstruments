@@ -1,0 +1,36 @@
+From 10c518ceca29898c294f34c0d764ab3507c50bd4 Mon Sep 17 00:00:00 2001
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 4 Oct 2011 16:15:43 +0530
+Subject: [PATCH 28/29] ARM:am33xx:hwmod: uart1 support
+
+uart1 (referred by platform code as uart2) added
+to hwmod database. Also add clkdm_name for it.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_335x_data.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/omap_hwmod_335x_data.c b/arch/arm/mach-omap2/omap_hwmod_335x_data.c
+index 4b1770d..e2affc9 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_335x_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_335x_data.c
+@@ -1970,6 +1970,7 @@ static struct omap_hwmod am335x_uart2_hwmod = {
+ 	.class		= &uart_class,
+ 	.mpu_irqs       = am335x_uart2_irqs,
+ 	.main_clk	= "uart2_fck",
++	.clkdm_name	= "l4ls_clkdm",
+ 	.sdma_reqs	= uart1_edma_reqs,
+ 	.prcm = {
+ 		.omap4 = {
+@@ -1979,6 +1980,7 @@ static struct omap_hwmod am335x_uart2_hwmod = {
+ 	},
+ 	.slaves		= am335x_uart2_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(am335x_uart2_slaves),
++	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_AM335X),
+ };
+ 
+ /* uart3 */
+-- 
+1.6.6.1
+

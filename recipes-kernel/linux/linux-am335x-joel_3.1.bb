@@ -9,7 +9,7 @@ DEFAULT_PREFERENCE = "-1"
 SRCREV = "da6bf24fa53a44d7ee7298fa0a41c55b8f59f044"
 
 # The main PR is now using MACHINE_KERNEL_PR, for omap3 see conf/machine/include/omap3.inc
-MACHINE_KERNEL_PR_append = "b+gitr${SRCREV}"
+MACHINE_KERNEL_PR_append = "c+gitr${SRCREV}"
 
 SRC_URI = "git://github.com/joelagnel/linux-omap-2.6.git;branch=kernel-3.1-psp \
 file://0001-ARM-omap-am33xx-ADD-support-i2c1.patch \
@@ -32,8 +32,19 @@ file://0017-ARM-omap-hsmmc-Support-new-HSMMC-IP-Variant.patch \
 file://0018-ARM-omap-hsmmc-Enable-card-Insert-Removal-interrupt.patch \
 file://0019-ARM-omap-am33xx-Register-HSMMC-Platform-on-AM335x-EV.patch \
 file://0020-ARM-omap-am33xx-HSMMC-update-hwmod-data.patch \
-file://0001-am335x-evm-hack-in-LED-support-for-beaglebone.patch \
+file://0021-usb-musb-gadget-fix-error-path.patch \
+file://0022-usb-musb_gadget-fix-panic-with-dual-gadget-rmmod.patch \
+file://0023-AM335x-Corrected-the-MTD-NAND-partition-table.patch \
+file://0024-video-da8xx-fb-Fix-flicker-due-to-1-frame-delay-in-u.patch \
+file://0025-ARM-omap-am33xx-CPSW-fix-for-using-macid-from-efuse.patch \
+file://0026-ARM-omap-am33xx-MMC-Add-debounce-WP-Polarity-support.patch \
+file://0027-ARM-omap-am335x-MMC-enable-proper-WP-detection.patch \
+file://0028-ARM-am33xx-hwmod-uart1-support.patch \
+file://0029-ARM-omap-am335x-CPSW-autonegotiates-to-10-100-mbps.patch \
 file://0001-f_rndis-HACK-around-undefined-variables.patch \
+file://0002-Enable-bit15-in-the-maccontrol-register-for-100Mbps.patch \
+file://0001-Add-minimal-hacked-beaglebone-support-to-the-board-f.patch \
+file://0001-am335x-evm-hack-in-LED-support-for-beaglebone.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"

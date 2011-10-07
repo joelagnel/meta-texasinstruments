@@ -1,7 +1,7 @@
 From 9610a3495173d52be32ebaaa440b1a1c1323690a Mon Sep 17 00:00:00 2001
 From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
 Date: Mon, 26 Sep 2011 17:03:23 +0530
-Subject: [PATCH 11/20] ARM:omap:am33xx: McASP hookup for AM335x EVM
+Subject: [PATCH 11/29] ARM:omap:am33xx: McASP hookup for AM335x EVM
 
 This patch adds the machine driver for AM335x EVM in conformance with the new
 ASoC framework.

@@ -1,7 +1,7 @@
 From 21e4c6abc8ce00a048ec58668fdb992c1853f1ea Mon Sep 17 00:00:00 2001
 From: Patil, Rachna <rachna@ti.com>
 Date: Wed, 28 Sep 2011 16:31:50 +0530
-Subject: [PATCH 02/20] AM335X: Avoid i2c pin mux setup.
+Subject: [PATCH 02/29] AM335X: Avoid i2c pin mux setup.
 
 Since i2c1 is available only in some profiles, we bypass i2c pin
 muxing in i2c.c file. Pin muxing is taken care of, in the board file

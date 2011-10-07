@@ -1,7 +1,7 @@
 From a39c78eb5b937e7b439c0d6eaeb247036e697d17 Mon Sep 17 00:00:00 2001
 From: Manjunathappa, Prakash <prakash.pm@ti.com>
 Date: Thu, 29 Sep 2011 12:46:24 +0530
-Subject: [PATCH 14/20] AM335X: Enable frame buffer and backlight driver in default am335x_evm_defconfig
+Subject: [PATCH 14/29] AM335X: Enable frame buffer and backlight driver in default am335x_evm_defconfig
 
 This patch enables the da8xx-fb frame buffer device, frame buffer
 console and backlight driver.

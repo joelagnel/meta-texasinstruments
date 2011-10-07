@@ -1,4 +1,4 @@
-From 4b04c3bc5bc385ac547f910f338187eb52e0ad1f Mon Sep 17 00:00:00 2001
+From ed2b4469ce07a6e3aec681a26010753c1e20551f Mon Sep 17 00:00:00 2001
 From: Koen Kooi <koen@dominion.thruhere.net>
 Date: Fri, 7 Oct 2011 14:39:31 +0200
 Subject: [PATCH] am335x-evm: hack in LED support for beaglebone
@@ -9,7 +9,7 @@ Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
  1 files changed, 63 insertions(+), 0 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-am335xevm.c b/arch/arm/mach-omap2/board-am335xevm.c
-index 0457556..bd8d53f 100644
+index 0f47b65..82804a9 100644
 --- a/arch/arm/mach-omap2/board-am335xevm.c
 +++ b/arch/arm/mach-omap2/board-am335xevm.c
 @@ -17,6 +17,7 @@
@@ -20,7 +20,7 @@ index 0457556..bd8d53f 100644
  #include <linux/mtd/mtd.h>
  #include <linux/mtd/nand.h>
  #include <linux/mtd/partitions.h>
-@@ -544,6 +545,58 @@ static struct pinmux_config usb1_pin_mux[] = {
+@@ -559,6 +560,58 @@ static struct pinmux_config usb1_pin_mux[] = {
  	{NULL, 0},
  };
  
@@ -79,7 +79,7 @@ index 0457556..bd8d53f 100644
  /* Module pin mux for eCAP0 */
  static struct pinmux_config ecap0_pin_mux[] = {
  	{"ecap0_in_pwm0_out.gpio0_7", AM335X_PIN_OUTPUT},
-@@ -616,6 +669,15 @@ static void tsc_init(int evm_id, int profile)
+@@ -631,6 +684,15 @@ static void tsc_init(int evm_id, int profile)
  		pr_err("failed to register touchscreen device\n");
  }
  
@@ -95,14 +95,14 @@ index 0457556..bd8d53f 100644
  static void rgmii1_init(int evm_id, int profile)
  {
  	setup_pin_mux(rgmii1_pin_mux);
-@@ -784,6 +846,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
- 		(PROFILE_ALL & ~PROFILE_2 & ~PROFILE_3)},
- 	{i2c1_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_3 | PROFILE_7)},
- 	{mcasp1_init,	DEV_ON_DGHTR_BRD, (PROFILE_0 | PROFILE_3) },
+@@ -844,6 +906,7 @@ static struct evm_dev_cfg beaglebone_dev_cfg[] = {
+ 	{usb1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+ 	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+ 	{i2c1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 +	{bone_leds_init,  DEV_ON_BASEBOARD, PROFILE_ALL},
- 	{mmc1_init,	DEV_ON_DGHTR_BRD, PROFILE_2},
- 	{mmc2_init,	DEV_ON_DGHTR_BRD, PROFILE_4},
- 	{mmc0_init,	DEV_ON_BASEBOARD, (PROFILE_ALL & ~PROFILE_5)},
+ 	{NULL, 0, 0},
+ };
+ 
 -- 
 1.6.6.1
 

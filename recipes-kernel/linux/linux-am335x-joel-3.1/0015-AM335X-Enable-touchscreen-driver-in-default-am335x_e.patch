@@ -1,7 +1,7 @@
 From a925b42add943dcc210a1d44e4841a88264e4454 Mon Sep 17 00:00:00 2001
 From: Patil, Rachna <rachna@ti.com>
 Date: Thu, 29 Sep 2011 14:47:45 +0530
-Subject: [PATCH 15/20] AM335X: Enable touchscreen driver in default am335x_evm_defconfig
+Subject: [PATCH 15/29] AM335X: Enable touchscreen driver in default am335x_evm_defconfig
 
 This patch enables ti_tscadc touchscreen driver in the default
 am335x_evm_deconfig.

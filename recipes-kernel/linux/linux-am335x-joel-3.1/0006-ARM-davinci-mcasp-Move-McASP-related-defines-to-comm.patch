@@ -1,7 +1,7 @@
 From c3ff3c7a94473c3f7717a3a5409baa4c106cf9d4 Mon Sep 17 00:00:00 2001
 From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
 Date: Fri, 23 Sep 2011 13:52:57 +0530
-Subject: [PATCH 06/20] ARM:davinci:mcasp: Move McASP related defines to common place
+Subject: [PATCH 06/29] ARM:davinci:mcasp: Move McASP related defines to common place
 
 Davinci McASP IP & its Driver is shared by few OMAP platforms. Moving the
 McASP ddefines to a common place, helps to share the same header file

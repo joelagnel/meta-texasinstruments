@@ -1,7 +1,7 @@
 From 6bde200639b4f64792ea9f4c519f74dd69811529 Mon Sep 17 00:00:00 2001
 From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
 Date: Mon, 26 Sep 2011 15:14:07 +0530
-Subject: [PATCH 01/20] ARM:omap:am33xx: ADD support i2c1
+Subject: [PATCH 01/29] ARM:omap:am33xx: ADD support i2c1
 
 i2c-1 bus is available on few EVM variants of AM335X. Provide support
 for the same (Pin-mux, board-info, device registration)

@@ -1,7 +1,7 @@
-From b11e622f710b94792d2f678a90cbe034a08382c2 Mon Sep 17 00:00:00 2001
+From 61471be87b0ef6c5041749954d45dadb3f82eb60 Mon Sep 17 00:00:00 2001
 From: Saxena, Parth <parth.saxena@ti.com>
 Date: Fri, 24 Jun 2011 13:19:45 +0530
-Subject: [PATCH 16/20] ARM:omap:hsmmc: use clk_get_rate() instead of hard coding clock rate
+Subject: [PATCH 16/29] ARM:omap:hsmmc: use clk_get_rate() instead of hard coding clock rate
 
 Initially, the functional clock to the mmc controller was hard coded
 as 96MHz in the driver. Thus, boards that did not have a functional

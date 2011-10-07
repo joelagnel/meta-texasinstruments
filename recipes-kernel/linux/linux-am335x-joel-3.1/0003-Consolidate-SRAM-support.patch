@@ -1,7 +1,7 @@
 From a21ab93bbad7fc2f8c478569545af743f447bd43 Mon Sep 17 00:00:00 2001
 From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 Date: Sun, 10 Jul 2011 14:19:39 +0200
-Subject: [PATCH 03/20] Consolidate SRAM support
+Subject: [PATCH 03/29] Consolidate SRAM support
 
 We have two SoCs using SRAM, both with their own allocation systems,
 and both with their own ways of copying functions into the SRAM.

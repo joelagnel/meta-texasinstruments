@@ -1,7 +1,7 @@
-From 834141f23d443b59ecd7cb6671f22910a58a1a13 Mon Sep 17 00:00:00 2001
+From 3abd0210c62fadde5d40a84505326b6bfd8c789c Mon Sep 17 00:00:00 2001
 From: Hebbar, Gururaja <gururaja.hebbar@ti.com>
 Date: Tue, 27 Sep 2011 22:53:34 +0530
-Subject: [PATCH 17/20] ARM:omap:hsmmc: Support new HSMMC IP Variant
+Subject: [PATCH 17/29] ARM:omap:hsmmc: Support new HSMMC IP Variant
 
 Few OMAP platform has a new Variant of HSMMC.
 
