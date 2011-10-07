@@ -1,27 +1,29 @@
 inherit image
 
+IMAGE_FSTYPES_append = " sdimg"
+
 IMAGE_CMD_sdimg () {
 	SDIMG=${WORKDIR}/sd.img
 
 	# cleanup loops
-	for loop in $(losetup -j ${SDIMG}); do
+	for loop in $(/sbin/losetup -a | grep ${SDIMG}); do
 		loop_dev=$(echo $loop|cut -d ":" -f 1)
 		umount $loop_dev || true
-		losetup -d $loop_dev || true
+		/sbin/losetup -d $loop_dev || true
 	done
 
 	dd if=/dev/zero of=${SDIMG} bs=$(echo '255 * 63 * 512' | bc) count=444
-	losetup -f ${SDIMG}
-	LOOPDEV=$(losetup -j ${SDIMG} -o 0 | cut -d ":" -f 1)
+	LOOPDEV=$(/sbin/losetup -f)
+	/sbin/losetup ${LOOPDEV} ${SDIMG}
 
 	# Create partition table
 	#dd if=/dev/zero of=${LOOPDEV} bs=1024 count=1024
-	SIZE=`fdisk -l ${LOOPDEV} | grep Disk | grep bytes | awk '{print $5}'`
-	CYLINDERS=`echo $SIZE/255/63/512 | bc`
+	SIZE=$(/sbin/fdisk -l ${LOOPDEV} | grep Disk | grep bytes | awk '{print $5}')
+	CYLINDERS=$(echo $SIZE/255/63/512 | bc)
 	{
 	echo ,9,0x0C,*
 	echo ,,,-
-	} | sfdisk -D -H 255 -S 63 -C ${CYLINDERS} ${LOOPDEV}
+	} | /sbin/sfdisk -D -H 255 -S 63 -C ${CYLINDERS} ${LOOPDEV}
 
 	# Prepare loop devices for boot and filesystem partitions
 	BOOT_OFFSET=32256
@@ -33,13 +35,13 @@ IMAGE_CMD_sdimg () {
 	LOOPDEV_BLOCKS=$(/sbin/fdisk -l -u $LOOPDEV 2>&1 | grep FAT | perl -p -i -e "s/\s+/ /g"|cut -d " " -f 5)
 	LOOPDEV_BYTES=$(echo "$LOOPDEV_BLOCKS * 1024" | bc)
 
-	losetup -f ${SDIMG} -o ${BOOT_OFFSET} --sizelimit=$LOOPDEV_BYTES
+	LOOPDEV_BOOT=$(/sbin/losetup -f)
+	/sbin/losetup ${LOOPDEV_BOOT} ${SDIMG} -o ${BOOT_OFFSET} 
 
-	LOOPDEV_BOOT=$(losetup -j ${SDIMG} -o ${BOOT_OFFSET} | cut -d ":" -f 1)
-        mkfs.msdos ${LOOPDEV_BOOT} -n boot
+	/sbin/mkfs.msdos ${LOOPDEV_BOOT} -n boot
 
-	losetup -f ${SDIMG} -o ${FS_OFFSET}	
-	LOOPDEV_FS=$(losetup -j ${SDIMG} -o ${FS_OFFSET} | cut -d ":" -f 1)
+	LOOPDEV_FS=$(/sbin/losetup -f)
+	/sbin/losetup ${LOOPDEV_FS} ${SDIMG} -o ${FS_OFFSET}	
 
 	# Prepare filesystem partition
 	# Copy ubi used by flashing scripts
@@ -49,7 +51,7 @@ IMAGE_CMD_sdimg () {
 	fi
 	ROOTFS_SIZE="$(du -ks ${IMAGE_ROOTFS} | awk '{print 65536 + $1}')"
 	genext2fs -b ${FS_SIZE_BLOCKS} -d ${IMAGE_ROOTFS} ${LOOPDEV_FS}
-	tune2fs -j ${LOOPDEV_FS}
+	/sbin/tune2fs -j ${LOOPDEV_FS}
 
 	# Prepare boot partion. First mount the boot partition, and copy the boot loader and supporting files
 	# from the root filesystem
@@ -65,8 +67,24 @@ IMAGE_CMD_sdimg () {
 	mount $LOOPDEV_BOOT
 
 	echo "Copying bootloaders into the boot partition"
-	cp -v ${IMAGE_ROOTFS}/boot/MLO ${WORKDIR}/tmp-mnt-boot 
-	cp -v ${IMAGE_ROOTFS}/boot/{u-boot.bin,user.txt,uEnv.txt} ${WORKDIR}/tmp-mnt-boot || true
+	if [ -e ${IMAGE_ROOTFS}/boot/MLO ] ; then
+		cp -v ${IMAGE_ROOTFS}/boot/MLO ${WORKDIR}/tmp-mnt-boot 
+	else
+		cp -v ${DEPLOY_DIR_IMAGE}/MLO ${WORKDIR}/tmp-mnt-boot
+	fi
+
+	# Check for u-boot SPL
+	if [ -e u-boot-${MACHINE}.img ] ; then
+		suffix=img
+	else
+		suffix=bin
+	fi
+
+	if [ -e ${IMAGE_ROOTFS}/boot/u-boot.$suffix ] ; then
+		cp -v ${IMAGE_ROOTFS}/boot/{u-boot.$suffix,user.txt,uEnv.txt} ${WORKDIR}/tmp-mnt-boot || true
+	else
+		cp -v ${DEPLOY_DIR_IMAGE}/u-boot-${MACHINE}.$suffix ${WORKDIR}/tmp-mnt-boot 
+	fi
 
 	# cleanup
 	umount ${LOOPDEV_BOOT}
