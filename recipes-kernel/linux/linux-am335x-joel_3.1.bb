@@ -4,7 +4,6 @@ DESCRIPTION = "Linux kernel for AM335x processors"
 KERNEL_IMAGETYPE = "uImage"
 
 COMPATIBLE_MACHINE = "beaglebone"
-DEFAULT_PREFERENCE = "-1"
 
 SRCREV = "da6bf24fa53a44d7ee7298fa0a41c55b8f59f044"
 
