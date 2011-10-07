@@ -4,6 +4,7 @@ require u-boot.inc
 COMPATIBLE_MACHINE = "beaglebone"
 DEFAULT_PREFERENCE_beaglebone = "99"
 PV = "2011.09+git"
+PR = "r1"
 
 # SPL build
 UBOOT_BINARY = "u-boot.img"
@@ -11,6 +12,7 @@ UBOOT_IMAGE = "u-boot-${MACHINE}-${PV}-${PR}.img"
 UBOOT_SYMLINK = "u-boot-${MACHINE}.img"
 
 SRC_URI = "git://github.com/joelagnel/u-boot.git;protocol=git;branch=bone-bringup \
+           file://0001-am335x-evm-hack-in-ethernet-rmii-clock.patch \
           "
 SRCREV = "d643e691ab2055ef64f73dd70300a73e0443d1ef"
 
