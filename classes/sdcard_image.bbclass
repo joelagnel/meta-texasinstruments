@@ -90,7 +90,14 @@ IMAGE_CMD_sdimg () {
 	if [ -e ${IMAGE_ROOTFS}/boot/u-boot.$suffix ] ; then
 		cp -v ${IMAGE_ROOTFS}/boot/{u-boot.$suffix,user.txt,uEnv.txt} ${WORKDIR}/tmp-mnt-boot || true
 	else
-		cp -v ${DEPLOY_DIR_IMAGE}/u-boot-${MACHINE}.$suffix ${WORKDIR}/tmp-mnt-boot 
+		cp -v ${DEPLOY_DIR_IMAGE}/u-boot-${MACHINE}.$suffix ${WORKDIR}/tmp-mnt-boot/u-boot.$suffix 
+	fi
+
+	# Deprecated, u-boot should load it from ext3 instead
+	if [ -e ${IMAGE_ROOTFS}/boot/uImage ] ; then
+		cp ${IMAGE_ROOTFS}/boot/uImage ${WORKDIR}/tmp-mnt-boot
+	fi
+		cp ${DEPLOY_DIR_IMAGE}/uImage-${MACHINE}.bin ${WORKDIR}/tmp-mnt-boot/uImage
 	fi
 
 	# Cleanup VFAT mount
@@ -110,4 +117,5 @@ IMAGE_CMD_sdimg () {
 	${LOSETUP} -d ${LOOPDEV_FS}
 
 	gzip -c ${WORKDIR}/sd.img > ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}-${PR}.img.gz
+	rm -f ${WORKDIR}/sd.img
 }
