@@ -96,7 +96,7 @@ IMAGE_CMD_sdimg () {
 	# Deprecated, u-boot should load it from ext3 instead
 	if [ -e ${IMAGE_ROOTFS}/boot/uImage ] ; then
 		cp ${IMAGE_ROOTFS}/boot/uImage ${WORKDIR}/tmp-mnt-boot
-	fi
+	else
 		cp ${DEPLOY_DIR_IMAGE}/uImage-${MACHINE}.bin ${WORKDIR}/tmp-mnt-boot/uImage
 	fi
 
