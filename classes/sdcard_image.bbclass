@@ -22,10 +22,8 @@ IMAGE_CMD_sdimg () {
 	fi
 
 	# cleanup loops
-	for loop in $(${LOSETUP} -a | grep ${SDIMG}); do
-		loop_dev=$(echo $loop|cut -d ":" -f 1)
-		umount $loop_dev || true
-		${LOSETUP} -d $loop_dev || true
+	for loop in ${LOOPDEV} ${LOOPDEV_BOOT} ${LOOPDEV_FS} ; do
+		${LOSETUP} -d $loop || true
 	done
 
 	# If an SD image is already present, reuse and reformat it
@@ -103,18 +101,21 @@ IMAGE_CMD_sdimg () {
 	# Cleanup VFAT mount
 	echo "Cleaning up VFAT mount"
 	umount ${WORKDIR}/tmp-mnt-boot
-	${LOSETUP} -d ${LOOPDEV_BOOT}
+	${LOSETUP} -d ${LOOPDEV_BOOT} || true
 
 	# Prepare ext3 parition
+	echo "Creating ext3 loopback"
 	${LOSETUP} ${LOOPDEV_FS} ${SDIMG} -o ${FS_OFFSET}
 
 	# should use fdisk info
-	genext2fs -b $FS_SIZE_BLOCKS -d ${IMAGE_ROOTFS} ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ext3
-	tune2fs -L ${IMAGE_NAME} -j ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ext3
+	echo "Creating ext3 image"
+	touch ${WORKDIR}/${IMAGE_NAME}.rootfs.ext3
+	genext2fs -b $FS_SIZE_BLOCKS -d ${IMAGE_ROOTFS} ${WORKDIR}/${IMAGE_NAME}.rootfs.ext3
+	tune2fs -L ${IMAGE_NAME} -j ${WORKDIR}/${IMAGE_NAME}.rootfs.ext3
 
-	dd if=${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ext3 of=${LOOPDEV_FS}
+	dd if=${WORKDIR}/${IMAGE_NAME}.rootfs.ext3 of=${LOOPDEV_FS}
 
-	${LOSETUP} -d ${LOOPDEV_FS}
+	${LOSETUP} -d ${LOOPDEV_FS} || true
 
 	gzip -c ${WORKDIR}/sd.img > ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}-${PR}.img.gz
 	rm -f ${WORKDIR}/sd.img
