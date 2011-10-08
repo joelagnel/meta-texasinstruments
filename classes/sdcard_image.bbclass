@@ -56,7 +56,7 @@ IMAGE_CMD_sdimg () {
 
 	${LOSETUP} ${LOOPDEV_BOOT} ${SDIMG} -o ${BOOT_OFFSET} 
 
-	/sbin/mkfs.msdos ${LOOPDEV_BOOT} -n boot
+	/sbin/mkfs.msdos ${LOOPDEV_BOOT} -n boot $LOOPDEV_BLOCKS
 
 	# Prepare filesystem partition
 	# Copy ubi used by flashing scripts
@@ -93,9 +93,9 @@ IMAGE_CMD_sdimg () {
 
 	# Deprecated, u-boot should load it from ext3 instead
 	if [ -e ${IMAGE_ROOTFS}/boot/uImage ] ; then
-		cp ${IMAGE_ROOTFS}/boot/uImage ${WORKDIR}/tmp-mnt-boot
+		cp -v ${IMAGE_ROOTFS}/boot/uImage ${WORKDIR}/tmp-mnt-boot
 	else
-		cp ${DEPLOY_DIR_IMAGE}/uImage-${MACHINE}.bin ${WORKDIR}/tmp-mnt-boot/uImage
+		cp -v ${DEPLOY_DIR_IMAGE}/uImage-${MACHINE}.bin ${WORKDIR}/tmp-mnt-boot/uImage
 	fi
 
 	# Cleanup VFAT mount
