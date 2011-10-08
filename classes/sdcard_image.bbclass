@@ -18,7 +18,6 @@ IMAGE_CMD_sdimg () {
 	if [ "x$(cat /etc/fstab | grep ${LOOPDEV_BOOT} | grep ${WORKDIR}/tmp-mnt-boot | grep user || true)" = "x" ]; then
 		echo "/etc/fstab entries need to be created with the user flag for the loop devices like:"
 		echo "${LOOPDEV_BOOT} ${WORKDIR}/tmp-mnt-boot msdos user 0 0"
-		echo "${LOOPDEV_FS} ${WORKDIR}/tmp-mnt-rootfs ext3 user 0 0"
         false
 	fi
 
@@ -47,12 +46,12 @@ IMAGE_CMD_sdimg () {
 
 	# Prepare loop devices for boot and filesystem partitions
 	BOOT_OFFSET=32256
-	FS_OFFSET_SECT=$(/sbin/fdisk -l -u $LOOPDEV 2>&1 | grep Linux | perl -p -i -e "s/\s+/ /"|cut -d " " -f 2)
+	FS_OFFSET_SECT=$(/sbin/fdisk -l -u ${LOOPDEV} 2>&1 | grep Linux | perl -p -i -e "s/\s+/ /"|cut -d " " -f 2)
 	FS_OFFSET=$(echo "$FS_OFFSET_SECT * 512" | bc)
-	FS_SIZE_BLOCKS=$(/sbin/fdisk -l -u $LOOPDEV 2>&1 | grep Linux | perl -p -i -e "s/\s+/ /g" \ 
+	FS_SIZE_BLOCKS=$(/sbin/fdisk -l -u ${LOOPDEV} 2>&1 | grep Linux | perl -p -i -e "s/\s+/ /g" \ 
 	|cut -d " " -f 4 | cut -d "+" -f 1)
  
-	LOOPDEV_BLOCKS=$(/sbin/fdisk -l -u $LOOPDEV 2>&1 | grep FAT | perl -p -i -e "s/\s+/ /g"|cut -d " " -f 5)
+	LOOPDEV_BLOCKS=$(/sbin/fdisk -l -u ${LOOPDEV} 2>&1 | grep FAT | perl -p -i -e "s/\s+/ /g"|cut -d " " -f 5)
 	LOOPDEV_BYTES=$(echo "$LOOPDEV_BLOCKS * 1024" | bc)
 
 	${LOSETUP} -d ${LOOPDEV}
@@ -95,20 +94,19 @@ IMAGE_CMD_sdimg () {
 	fi
 
 	# Cleanup VFAT mount
+	echo "Cleaning up VFAT mount"
 	umount ${WORKDIR}/tmp-mnt-boot
 	${LOSETUP} -d ${LOOPDEV_BOOT}
 
 	# Prepare ext3 parition
 	${LOSETUP} ${LOOPDEV_FS} ${SDIMG} -o ${FS_OFFSET}
-	/sbin/mkfs.ext3 ${LOOPDEV_FS} -L ${IMAGE_NAME}
 
-	mkdir -p ${WORKDIR}/tmp-mnt-rootfs
-	mount $LOOPDEV_BOOT ${WORKDIR}/tmp-mnt-rootfs
+	# should use fdisk info
+	genext2fs -b $FS_SIZE_BLOCKS -d ${IMAGE_ROOTFS} ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ext3
+	tune2fs -L ${IMAGE_NAME} -j ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ext3
 
- 	tar jxf ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.tar.bz2 -C ${WORKDIR}/tmp-mnt-rootfs
+	dd if=${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ext3 of=${LOOPDEV_FS}
 
-	# Cleanup ext3 mount
-	umount ${WORKDIR}/tmp-mnt-rootfs
 	${LOSETUP} -d ${LOOPDEV_FS}
 
 	gzip -c ${WORKDIR}/sd.img > ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}-${PR}.img.gz
