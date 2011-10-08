@@ -71,13 +71,6 @@ IMAGE_CMD_sdimg () {
 	# Prepare boot partion. First mount the boot partition, and copy the boot loader and supporting files
 	# from the root filesystem
 
-	# sanity check fstab entry for boot partition mounting
-	if [ "x$(cat /etc/fstab | grep ${WORKDIR}/tmp-mnt-boot | grep user || true)" = "x" ]; then
-		echo "/etc/fstab entries need to be created with the user flag for $LOOPDEV_BOOT like:"
-		echo "$LOOPDEV_BOOT ${WORKDIR}/tmp-mnt-boot msdos user 0 0"
-		#false
-	fi
-
 	mkdir -p ${WORKDIR}/tmp-mnt-boot
 	mount $LOOPDEV_BOOT ${WORKDIR}/tmp-mnt-boot
 
@@ -89,7 +82,7 @@ IMAGE_CMD_sdimg () {
 	fi
 
 	# Check for u-boot SPL
-	if [ -e u-boot-${MACHINE}.img ] ; then
+	if [ -e ${DEPLOY_DIR_IMAGE}/u-boot-${MACHINE}.img ] ; then
 		suffix=img
 	else
 		suffix=bin
@@ -101,13 +94,11 @@ IMAGE_CMD_sdimg () {
 		cp -v ${DEPLOY_DIR_IMAGE}/u-boot-${MACHINE}.$suffix ${WORKDIR}/tmp-mnt-boot 
 	fi
 
-
-	umount ${LOOPDEV_BOOT}
+	# Cleanup VFAT mount
+	umount ${WORKDIR}/tmp-mnt-boot
 	${LOSETUP} -d ${LOOPDEV_BOOT}
 
-	# Ext3 section
-
-	ROOTFS_SIZE="$(du -ks ${IMAGE_ROOTFS} | awk '{print 65536 + $1}')"
+	# Prepare ext3 parition
 	${LOSETUP} ${LOOPDEV_FS} ${SDIMG} -o ${FS_OFFSET}
 	/sbin/mkfs.ext3 ${LOOPDEV_FS} -L ${IMAGE_NAME}
 
@@ -116,6 +107,8 @@ IMAGE_CMD_sdimg () {
 
  	tar jxf ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.tar.bz2 -C ${WORKDIR}/tmp-mnt-rootfs
 
+	# Cleanup ext3 mount
+	umount ${WORKDIR}/tmp-mnt-rootfs
 	${LOSETUP} -d ${LOOPDEV_FS}
 
 	gzip -c ${WORKDIR}/sd.img > ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}-${PR}.img.gz
