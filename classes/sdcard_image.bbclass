@@ -7,11 +7,12 @@ IMAGE_FSTYPES_append = " tar.bz2 sdimg"
 LOSETUP ?= "/sbin/losetup"
 
 # Since these need to go in /etc/fstab we can hardcode them
-LOOPDEV ?= "/dev/loop1"
-LOOPDEV_BOOT ?= "/dev/loop2"
-LOOPDEV_FS ?= "/dev/loop3"
+LOOPDEV ?= "/dev/loop2"
+LOOPDEV_BOOT ?= "/dev/loop3"
+LOOPDEV_FS ?= "/dev/loop4"
 
 IMAGE_CMD_sdimg () {
+	set -x
 	SDIMG=${WORKDIR}/sd.img
 
 	# sanity check fstab entry for boot partition mounting
@@ -28,7 +29,7 @@ IMAGE_CMD_sdimg () {
 
 	# If an SD image is already present, reuse and reformat it
 	if [ ! -e ${SDIMG} ] ; then
-		dd if=/dev/zero of=${SDIMG} bs=$(echo '255 * 63 * 512' | bc) count=444
+		dd if=/dev/zero of=${SDIMG} bs=$(echo '255 * 63 * 512' | bc) count=222
 	fi
 
 	${LOSETUP} ${LOOPDEV} ${SDIMG}
