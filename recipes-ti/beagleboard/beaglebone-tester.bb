@@ -1,13 +1,15 @@
 DESCRIPTION = "BeagleBone tester scripts"
 HOMEPAGE = "http://beagleboard.org/support"
 
+PR="r1"
+
 SRC_URI = "git://github.com/joelagnel/validation-scripts.git;protocol=git \
 "
 
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM="file://gpl.txt;md5=5b122a36d0f6dc55279a0ebc69f3c60b"
 
-SRCREV = "e9b6378ae1be1d63626e4c177167cd192aaee166"
+SRCREV = "${AUTOREV}"
 S = "${WORKDIR}/git"
 
 inherit update-rc.d
