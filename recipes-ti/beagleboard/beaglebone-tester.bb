@@ -4,6 +4,10 @@ HOMEPAGE = "http://beagleboard.org/support"
 SRC_URI = "git://github.com/joelagnel/validation-scripts.git;protocol=git \
 "
 
+RDEPENDS_${PN}="kernel-module-g-zero \
+                kernel-module-g-file-storage \
+                kernel-module-smsc95xx"
+
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM="file://gpl.txt;md5=5b122a36d0f6dc55279a0ebc69f3c60b"
 
