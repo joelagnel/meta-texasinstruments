@@ -17,6 +17,7 @@ FILES_${PN} += "/lib/systemd/system/bone-tester.service \
 do_install() {
   install -d ${D}/var/lib/bone-tester/component/data/
   install -d ${D}/var/lib/bone-tester/init-scripts/
+  install -d ${D}/var/lib/bone-tester/lib/
   install -d ${D}/lib/systemd/system/multi-user.target.wants/
 
   # systemd configuration
@@ -29,5 +30,8 @@ do_install() {
   done
   for i in ${S}/bone-tester/component/data/* ; do
     install -m 0755 ${i} ${D}/var/lib/bone-tester/component/data/
+  done
+  for i in ${S}/bone-tester/lib/* ; do
+    install -m 0755 ${i} ${D}/var/lib/bone-tester/lib/
   done
 }
