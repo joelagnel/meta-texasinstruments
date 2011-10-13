@@ -26,6 +26,7 @@ IMAGE_INSTALL += " \
 	evtest \
 	bc \
 	iputils \
+	beaglebone-tester \
 "
 
 CONMANPKGS = "connman connman-plugin-loopback connman-plugin-ethernet connman-plugin-wifi connman-systemd"
