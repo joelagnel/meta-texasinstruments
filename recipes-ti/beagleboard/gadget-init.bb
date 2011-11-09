@@ -1,6 +1,6 @@
 DESCRIPTION = "Units to initialize usb gadgets"
 
-PR = "r4"
+PR = "r5"
 
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=3f40d7994397109285ec7b81fdeb3b58"
@@ -35,4 +35,20 @@ do_install() {
 	install -m 0755 ${WORKDIR}/*.sh ${D}${bindir}
 }
 
-FILES_${PN} = "${base_libdir}/systemd ${sysconfdir} ${bindir}"
+PACKAGES =+ "${PN}-storage ${PN}-network ${PN}-udhcpd"
+
+FILES_${PN} = "${sysconfdir}/udev/rules.d/99-hokey-pokey.rules \
+               ${bindir}/hokey-pokey.sh \"
+
+FILES_${PN}-storage = "${base_libdir}/systemd/system/storage-gadget-init.service \
+                       ${base_libdir}/systemd/system/basic.target.wants/storage-gadget-init.service \
+                       ${bindir}/g-storage-reinsert.sh \
+                       ${sysconfdir}/udev/rules.d/bone-gmass-eject.rules"
+
+FILES_${PN}-network = "${base_libdir}/systemd/system/network-gadget-init.service \
+                       ${base_libdir}/systemd/system/basic.target.wants/network-gadget-init.service \
+                       ${bindir}/g-ether-insert.sh"
+
+FILES_${PN}-udhcpd = "${base_libdir}/systemd/system/udhcpd.service \
+                      ${base_libdir}/systemd/system/basic.target.wants/udhcpd.service \
+                      ${sysconfdir}/udhcpd.conf"
