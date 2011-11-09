@@ -1,0 +1,1 @@
+SUBSYSTEM=="block",ACTION=="change",KERNEL=="mmcblk0p1",RUN+="/usr/sbin/g-ether-insert.sh"
